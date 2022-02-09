@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: XXX ADD VALID LICENSE
 pragma solidity ^0.8.11;
 
-import "./CometConfiguration.sol";
 import "./CometMath.sol";
 import "./CometStorage.sol";
 
@@ -13,7 +12,7 @@ import "./vendor/@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.
  * @notice An efficient monolithic money market protocol
  * @author Compound
  */
-contract Comet is CometMath, CometStorage, CometConfiguration {
+contract Comet is CometMath, CometStorage {
     struct AssetInfo {
         uint8 offset;
         address asset;
