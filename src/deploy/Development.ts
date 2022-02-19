@@ -13,6 +13,8 @@ import {
   SimplePriceFeed__factory,
   TransparentUpgradeableFactoryProxy__factory,
   TransparentUpgradeableFactoryProxy,
+  Configurator,
+  Configurator__factory,
 } from '../../build/types';
 import { AssetInfoStruct, ConfigurationStruct } from '../../build/types/Comet';
 import { BigNumberish } from 'ethers';
@@ -120,6 +122,11 @@ export async function deployDevelopmentComet(
       []
     );
 
+    const configurator = await deploymentManager.deploy<Configurator, Configurator__factory, []>(
+      'Configurator.sol',
+      []
+    );
+
     let proxyAdminArgs: [] = [];
     let proxyAdmin = await deploymentManager.deploy<CometProxyAdmin, CometProxyAdmin__factory, []>(
       'CometProxyAdmin.sol',
@@ -131,12 +138,13 @@ export async function deployDevelopmentComet(
       TransparentUpgradeableFactoryProxy__factory,
       [string, string, string, string]
     >('TransparentUpgradeableFactoryProxy.sol', [
-      cometFactory.address,
+      configurator.address,
       comet.address,
       proxyAdmin.address,
       (await comet.populateTransaction.XXX_REMOVEME_XXX_initialize()).data,
     ]);
 
+    await proxyAdmin.connect(governor).setFactory(proxy.address, cometFactory.address);
     await proxyAdmin.connect(governor).setConfiguration(proxy.address, configuration);
 
     await deploymentManager.putRoots(new Map([['comet', proxy.address]]));

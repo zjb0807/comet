@@ -6,7 +6,7 @@ pragma solidity ^0.8.11;
  * @dev Versions can enforce append-only storage slots via inheritance.
  * @author Compound
  */
-contract CometConfiguration {
+interface CometConfiguration {
     struct Configuration {
         address governor;
         address pauseGuardian;
