@@ -26,9 +26,14 @@ contract Configurator is ConfiguratorStorage {
         factory = _factory;
     }
 
+    function getInt() external returns (uint) {
+        return 0;
+    }
+
     /// @notice Deploy a new version of the Comet implementation.
     /// @dev callable by anyone
     function deploy() external returns (address) {
+        // revert("THIS IS NOT ALLOWED");
         address newComet = CometFactory(factory).clone(configuratorParams);
         // cometImpl = newComet;
         emit CometDeployed(newComet);

@@ -15,15 +15,18 @@ scenario.only('upgrade governor', {}, async ({ comet, configurator, proxyAdmin, 
 
   await configurator.connect(admin.signer).setGovernor(albert.address);
 
-  let tx = await wait(await configurator.deploy());
-  let newCometAddr = getNewCometAddress(tx);
+  // let tx = await wait(await configurator.deploy());
+  // let newCometAddr = getNewCometAddress(tx);
+  console.log('owner is ', await proxyAdmin.owner())
+  console.log('admin is ', admin.address)
+  await proxyAdmin.connect(admin.signer).deployAndUpgradeTo(configurator.address, comet.address);
 
-  await proxyAdmin.upgrade(comet.address, newCometAddr)
+  // await proxyAdmin.upgrade(comet.address, newCometAddr)
 
   expect(await comet.governor()).to.equal(albert.address);
 });
 
-scenario.only('add assets', {}, async ({ comet, configurator, proxyAdmin, actors, assets }: CometContext, world) => {
+scenario('add assets', {}, async ({ comet, configurator, proxyAdmin, actors, assets }: CometContext, world) => {
   let numAssets = await comet.numAssets();
   let collateralAssets = await Promise.all(Array(numAssets).fill(0).map((_, i) => comet.getAssetInfo(i)));
   let contextAssets =
@@ -57,7 +60,7 @@ scenario.only('add assets', {}, async ({ comet, configurator, proxyAdmin, actors
   expect(updatedCollateralAssets.map(a => a.asset)).to.have.members(updatedContextAssets);
 });
 
-scenario.only('reverts if configurator is not called by governor', {}, async ({ comet, configurator, proxyAdmin, actors }, world) => {
+scenario('reverts if configurator is not called by governor', {}, async ({ comet, configurator, proxyAdmin, actors }, world) => {
   const { albert } = actors;
 
   await expect(configurator.connect(albert.signer).setGovernor(albert.address)).to.be.revertedWith(

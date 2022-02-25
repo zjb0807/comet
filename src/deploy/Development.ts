@@ -7,8 +7,8 @@ import {
   CometFactory,
   FaucetToken__factory,
   FaucetToken,
-  ProxyAdmin,
-  ProxyAdmin__factory,
+  CometProxyAdmin,
+  CometProxyAdmin__factory,
   SimplePriceFeed,
   SimplePriceFeed__factory,
   TransparentUpgradeableProxy,
@@ -130,8 +130,8 @@ export async function deployDevelopmentComet(
     );
 
     let proxyAdminArgs: [] = [];
-    let proxyAdmin = await deploymentManager.deploy<ProxyAdmin, ProxyAdmin__factory, []>(
-      'vendor/proxy/ProxyAdmin.sol',
+    let proxyAdmin = await deploymentManager.deploy<CometProxyAdmin, CometProxyAdmin__factory, []>(
+      'CometProxyAdmin.sol',
       proxyAdminArgs
     );
     
