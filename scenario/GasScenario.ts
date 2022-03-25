@@ -562,7 +562,7 @@ scenario.only(
   { remote_token: { mainnet: ['WBTC'] }, utilization: 0.5, defaultBaseAmount: 5000 },
   async ({ comet, assets, actors }, world, context) => {
     let tokenAmounts = {
-      'WBTC': exp(.0000001, 8),
+      'WBTC': exp(0.0001, 8),
       'WETH': exp(0.01, 18),
     };
     const minterAddress = "0xdd940fc821853799eaf27e9eb0a420ed3bcdc3ef";
@@ -601,7 +601,7 @@ scenario.only(
   { remote_token: { mainnet: ['WBTC'] }, utilization: 0.5, defaultBaseAmount: 5000 },
   async ({ comet, assets, actors }, world, context) => {
     let tokenAmounts = {
-      'WBTC': exp(.0000001, 8),
+      'WBTC': exp(0.0001, 8),
       'WETH': exp(0.01, 18),
     };
     const minterAddress = "0xdd940fc821853799eaf27e9eb0a420ed3bcdc3ef";
