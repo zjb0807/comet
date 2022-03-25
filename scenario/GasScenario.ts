@@ -9,10 +9,11 @@ import { opCodesForTransaction } from "../test/trace";
 // https://etherscan.io/tx/0x2336172d3ceda04c9f9d7bdc836ed3bd11c51f780fe8c3cdea6569ee007ef92b
 // Comet: 126,251 gas
 // Compound v2: 200,032 gas
-scenario(
+scenario.only(
   'gas# cold supply base (USDC)',
   { upgrade: true },
   async ({ comet, assets, actors }, world, context) => {
+    let {betty} = actors;
     let tokenAmounts = {
       'USDC': exp(200, 6),
     };
@@ -23,20 +24,32 @@ scenario(
     for (let [token, amount] of Object.entries(tokenAmounts)) {
       let asset = assets[token]!;
       await asset.approve(primary, comet);
+      await asset.approve(betty, comet);
+
       await asset.token.connect(minter).transfer(
         primary.address,
-        amount
+        amount / 2n
+      );
+      await asset.token.connect(minter).transfer(
+        betty.address,
+        amount / 2n
       );
     }
 
-    let tx = await wait(comet.connect(primary.signer).supply(await comet.baseToken(), exp(200, 6)));
+    let tx1 = await wait(comet.connect(betty.signer).supply(await comet.baseToken(), exp(100, 6)));
+    let tx2 = await wait(comet.connect(primary.signer).supply(await comet.baseToken(), exp(100, 6)));
     // console.log({tx})
 
-    const { totalGasCost, orderedOpcodeCounts, opcodeGasTotal } = await opCodesForTransaction(
+    const { totalGasCost: totalGasCost1, orderedOpcodeCounts: orderedOpcodeCounts1, opcodeGasTotal: opcodeGasTotal1 } = await opCodesForTransaction(
       world.hre.network.provider,
-      tx
+      tx1
     );
-    console.log(`totalGasCost: ${totalGasCost}`);
+    const { totalGasCost: totalGasCost2, orderedOpcodeCounts: orderedOpcodeCounts2, opcodeGasTotal: opcodeGasTotal2 } = await opCodesForTransaction(
+      world.hre.network.provider,
+      tx2
+    );
+    console.log(`totalGasCost1: ${totalGasCost1}`);
+    console.log(`totalGasCost2: ${totalGasCost2}`);
     // console.log(`opcodeGasTotal: ${opcodeGasTotal}`);
     // console.log(orderedOpcodeCounts);
     // console.log(`base balance of user is: ${await comet.baseBalanceOf(primary.signer.address)}`)
@@ -87,10 +100,12 @@ scenario(
 // https://etherscan.io/tx/0x1e72b191e9679918a72becf35b2ca398b2419339bd5f7d292a3a21444d8888aa
 // Comet: 143,293 gas
 // Compound v2: 142,751 gas
-scenario(
+scenario.only(
   'gas# cold supply WETH',
   {upgrade: true},
   async ({ comet, assets, actors }, world, context) => {
+    let {betty} = actors;
+
     let tokenAmounts = {
       'WETH': exp(0.01, 18),
     };
@@ -104,18 +119,29 @@ scenario(
       await asset.approve(primary, comet);
       await asset.token.connect(minter).transfer(
         primary.address,
-        amount
+        amount / 2n
+      );
+      await asset.approve(betty, comet);
+      await asset.token.connect(minter).transfer(
+        betty.address,
+        amount / 2n
       );
     }
 
-    let tx = await wait(comet.connect(primary.signer).supply(assets['WETH'].address, exp(0.01, 18)));
+    let tx1 = await wait(comet.connect(betty.signer).supply(assets['WETH'].address, exp(0.005, 18)));
+    let tx2 = await wait(comet.connect(primary.signer).supply(assets['WETH'].address, exp(0.005, 18)));
     // console.log({tx})
 
-    const { totalGasCost, orderedOpcodeCounts, opcodeGasTotal } = await opCodesForTransaction(
+    const { totalGasCost: totalGasCost1, orderedOpcodeCounts: orderedOpcodeCounts1, opcodeGasTotal: opcodeGasTotal1 } = await opCodesForTransaction(
       world.hre.network.provider,
-      tx
+      tx1
     );
-    console.log(`totalGasCost: ${totalGasCost}`);
+    const { totalGasCost: totalGasCost2, orderedOpcodeCounts: orderedOpcodeCounts2, opcodeGasTotal: opcodeGasTotal2 } = await opCodesForTransaction(
+      world.hre.network.provider,
+      tx2
+    );
+    console.log(`totalGasCost1: ${totalGasCost1}`);
+    console.log(`totalGasCost2: ${totalGasCost2}`);
     // console.log(`opcodeGasTotal: ${opcodeGasTotal}`);
     // console.log(orderedOpcodeCounts);
     // console.log(`WETH balance of user is: ${await comet.collateralBalanceOf(primary.signer.address, assets['WETH'].address)}`)
@@ -167,12 +193,13 @@ scenario(
 // https://etherscan.io/tx/0xca37abcd08f7a47fc47f26a2e5b83a760464c4d7eaa0f32293fbab1bf288db04
 // Comet: 150,489 gas
 // Compound v2: 190,736 gas
-scenario(
+scenario.only(
   'gas# cold supply WBTC',
   {upgrade: true},
   async ({ comet, assets, actors }, world, context) => {
+    let {betty} = actors;
     let tokenAmounts = {
-      'WBTC': exp(1, 8),
+      'WBTC': exp(2, 8),
     };
     const minterAddress = "0xdd940fc821853799eaf27e9eb0a420ed3bcdc3ef";
     const minter = await world.impersonateAddress(minterAddress);
@@ -182,20 +209,31 @@ scenario(
       let asset = assets[token]!;
       console.log(await asset.balanceOf(minter.address))
       await asset.approve(primary, comet);
+      await asset.approve(betty, comet);
       await asset.token.connect(minter).transfer(
         primary.address,
-        amount
+        amount / 2n
+      );
+      await asset.token.connect(minter).transfer(
+        betty.address,
+        amount / 2n
       );
     }
 
-    let tx = await wait(comet.connect(primary.signer).supply(assets['WBTC'].address, exp(1, 8)));
+    let tx1 = await wait(comet.connect(betty.signer).supply(assets['WBTC'].address, exp(0.5, 8)));
+    let tx2 = await wait(comet.connect(primary.signer).supply(assets['WBTC'].address, exp(0.5, 8)));
     // console.log({tx})
 
-    const { totalGasCost, orderedOpcodeCounts, opcodeGasTotal } = await opCodesForTransaction(
+    const { totalGasCost: totalGasCost1, orderedOpcodeCounts: orderedOpcodeCounts1, opcodeGasTotal: opcodeGasTotal1 } = await opCodesForTransaction(
       world.hre.network.provider,
-      tx
+      tx1
     );
-    console.log(`totalGasCost: ${totalGasCost}`);
+    const { totalGasCost: totalGasCost2, orderedOpcodeCounts: orderedOpcodeCounts2, opcodeGasTotal: opcodeGasTotal2 } = await opCodesForTransaction(
+      world.hre.network.provider,
+      tx2
+    );
+    console.log(`totalGasCost1: ${totalGasCost1}`);
+    console.log(`totalGasCost2: ${totalGasCost2}`);
     // console.log(`opcodeGasTotal: ${opcodeGasTotal}`);
     // console.log(orderedOpcodeCounts);
     // console.log(`WETH balance of user is: ${await comet.collateralBalanceOf(primary.signer.address, assets['WETH'].address)}`)
@@ -500,16 +538,24 @@ scenario(
       // console.log("gas", token, asset, await primary.getCollateralBalance(asset));
     }
 
+    console.log('STARTING FIRST BORROW\n')
     // Borrow twice so the second time is warm
-    await comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(1, 6));
-    let tx = await wait(comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(10, 6)));
+    let tx1 = await wait(comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(1, 6)));
+    console.log('STARTING SECOND BORROW\n')
+    let tx2 = await wait(comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(10, 6)));
     // console.log({tx})
 
-    const { totalGasCost, orderedOpcodeCounts, opcodeGasTotal } = await opCodesForTransaction(
+    const { totalGasCost: totalGasCost1, orderedOpcodeCounts: orderedOpcodeCounts1, opcodeGasTotal: opcodeGasTotal1 } = await opCodesForTransaction(
       world.hre.network.provider,
-      tx
+      tx1
     );
-    console.log(`totalGasCost: ${totalGasCost}`);
+    const { totalGasCost: totalGasCost2, orderedOpcodeCounts: orderedOpcodeCounts2, opcodeGasTotal: opcodeGasTotal2 } = await opCodesForTransaction(
+      world.hre.network.provider,
+      tx2
+    );
+    console.log(`totalGasCost1: ${totalGasCost1}`);
+    console.log(`totalGasCost2: ${totalGasCost2}`);
+
     // console.log(`opcodeGasTotal: ${opcodeGasTotal}`);
     // console.log(orderedOpcodeCounts);
   }
@@ -554,7 +600,7 @@ scenario(
 // https://etherscan.io/tx/0x5b827a10462496328f320125d0e8819d07ad7fd8bcba872d2c99f45167ed3261
 // Comet: 145,228 gas warm, 144,920 gas cold
 // Compound v2: 289,588 gas
-scenario.only(
+scenario(
   'gas# warm borrow with 2 collateral assets',
   { remote_token: { mainnet: ['WBTC'] }, utilization: 0.5, defaultBaseAmount: 5000, upgrade: true },
   async ({ comet, assets, actors }, world, context) => {
