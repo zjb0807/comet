@@ -9,7 +9,7 @@ import { opCodesForTransaction } from "../test/trace";
 // https://etherscan.io/tx/0x2336172d3ceda04c9f9d7bdc836ed3bd11c51f780fe8c3cdea6569ee007ef92b
 // Comet: 126,251 gas
 // Compound v2: 200,032 gas
-scenario.only(
+scenario(
   'gas# cold supply base (USDC)',
   { },
   async ({ comet, assets, actors }, world, context) => {
@@ -100,7 +100,7 @@ scenario(
 // https://etherscan.io/tx/0x1e72b191e9679918a72becf35b2ca398b2419339bd5f7d292a3a21444d8888aa
 // Comet: 143,293 gas
 // Compound v2: 142,751 gas
-scenario.only(
+scenario(
   'gas# cold supply WETH',
   {},
   async ({ comet, assets, actors }, world, context) => {
@@ -193,7 +193,7 @@ scenario(
 // https://etherscan.io/tx/0xca37abcd08f7a47fc47f26a2e5b83a760464c4d7eaa0f32293fbab1bf288db04
 // Comet: 150,489 gas
 // Compound v2: 190,736 gas
-scenario.only(
+scenario(
   'gas# cold supply WBTC',
   {},
   async ({ comet, assets, actors }, world, context) => {
@@ -674,10 +674,11 @@ scenario(
 // https://etherscan.io/tx/0x0dd1c7ad810584e1a125f21a8ff4077826e63e31d13743a4886606e3b5eca88e
 // Comet: 198,906 gas warm, 198,598 cold
 // Compound v2: 332,696 gas
-scenario(
+scenario.only(
   'gas# warm borrow with 3 collateral assets',
   { remote_token: { mainnet: ['WBTC'] }, utilization: 0.5, defaultBaseAmount: 5000 },
   async ({ comet, assets, actors }, world, context) => {
+    let {betty} = actors;
     let tokenAmounts = {
       'WBTC': exp(.07, 8),
       'WETH': exp(0.01, 18),
@@ -693,31 +694,45 @@ scenario(
       await asset.approve(primary, comet); //
       await asset.token.connect(minter).transfer(
         primary.address,
-        amount
+        amount / 2n
       );
-      await comet.connect(primary.signer).supply(asset.address, amount);
+      await comet.connect(primary.signer).supply(asset.address, amount / 2n);
+      await asset.approve(betty, comet); //
+      await asset.token.connect(minter).transfer(
+        betty.address,
+        amount / 2n
+      );
+      await comet.connect(betty.signer).supply(asset.address, amount / 2n);
       // console.log("gas", token, asset, await primary.getCollateralBalance(asset));
     }
 
+    let tx1 = await wait(comet.connect(betty.signer).withdraw(await comet.baseToken(), exp(750, 6)));
+
     // Borrow twice so the second time is warm
     await comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(10, 6));
-    let tx = await wait(comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(1500, 6)));
+    let tx2 = await wait(comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(750, 6)));
     // console.log({tx})
 
-    const { totalGasCost, orderedOpcodeCounts, opcodeGasTotal } = await opCodesForTransaction(
+    const { totalGasCost: totalGasCost1, orderedOpcodeCounts: orderedOpcodeCounts1, opcodeGasTotal: opcodeGasTotal1 } = await opCodesForTransaction(
       world.hre.network.provider,
-      tx
+      tx1
     );
-    console.log(`totalGasCost: ${totalGasCost}`);
+    const { totalGasCost: totalGasCost2, orderedOpcodeCounts: orderedOpcodeCounts2, opcodeGasTotal: opcodeGasTotal2 } = await opCodesForTransaction(
+      world.hre.network.provider,
+      tx2
+    );
+    console.log(`totalGasCost1: ${totalGasCost1}`);
+    console.log(`totalGasCost2: ${totalGasCost2}`);
     // console.log(`opcodeGasTotal: ${opcodeGasTotal}`);
     // console.log(orderedOpcodeCounts);
   }
 );
 
-scenario(
+scenario.only(
   'gas# cold borrow with 3 collateral assets',
   { remote_token: { mainnet: ['WBTC'] }, utilization: 0.5, defaultBaseAmount: 5000 },
   async ({ comet, assets, actors }, world, context) => {
+    let {betty} = actors;
     let tokenAmounts = {
       'WBTC': exp(.07, 8),
       'WETH': exp(0.01, 18),
@@ -733,20 +748,32 @@ scenario(
       await asset.approve(primary, comet); //
       await asset.token.connect(minter).transfer(
         primary.address,
-        amount
+        amount / 2n
       );
-      await comet.connect(primary.signer).supply(asset.address, amount);
+      await comet.connect(primary.signer).supply(asset.address, amount / 2n);
+      await asset.approve(betty, comet); //
+      await asset.token.connect(minter).transfer(
+        betty.address,
+        amount / 2n
+      );
+      await comet.connect(betty.signer).supply(asset.address, amount / 2n);
       // console.log("gas", token, asset, await primary.getCollateralBalance(asset));
     }
 
-    let tx = await wait(comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(1500, 6)));
+    let tx1 = await wait(comet.connect(betty.signer).withdraw(await comet.baseToken(), exp(750, 6)));
+    let tx2 = await wait(comet.connect(primary.signer).withdraw(await comet.baseToken(), exp(750, 6)));
     // console.log({tx})
 
-    const { totalGasCost, orderedOpcodeCounts, opcodeGasTotal } = await opCodesForTransaction(
+    const { totalGasCost: totalGasCost1, orderedOpcodeCounts: orderedOpcodeCounts1, opcodeGasTotal: opcodeGasTotal1 } = await opCodesForTransaction(
       world.hre.network.provider,
-      tx
+      tx1
     );
-    console.log(`totalGasCost: ${totalGasCost}`);
+    const { totalGasCost: totalGasCost2, orderedOpcodeCounts: orderedOpcodeCounts2, opcodeGasTotal: opcodeGasTotal2 } = await opCodesForTransaction(
+      world.hre.network.provider,
+      tx2
+    );
+    console.log(`totalGasCost1: ${totalGasCost1}`);
+    console.log(`totalGasCost2: ${totalGasCost2}`);
     // console.log(`opcodeGasTotal: ${opcodeGasTotal}`);
     // console.log(orderedOpcodeCounts);
   }
