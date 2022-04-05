@@ -15,6 +15,8 @@ import {
 } from '../build/types';
 import { ConfigurationStruct } from '../build/types/Comet';
 
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
 async function verifyContract(address: string, constructorArguments) {
   try {
     return await hre.run('verify:verify', {
@@ -39,7 +41,7 @@ async function main() {
   let isDevelopment = hre.network.name === 'hardhat';
   let dm = new DeploymentManager(hre.network.name, hre, {
     writeCacheToDisk: true,
-    verifyContracts: !isDevelopment,
+    verifyContracts: false,
     debug: true,
   });
 
@@ -58,7 +60,7 @@ async function main() {
     trackingIndexScale: "0x038d7ea4c68000",
     baseTrackingSupplySpeed: "0x00",
     baseTrackingBorrowSpeed: "0x00",
-    baseMinForRewards: "0x01",
+    baseMinForRewards: "0x07",
     baseBorrowMin: "0x0f4240",
     targetReserves: "0x00",
     assetConfigs: 
@@ -116,6 +118,9 @@ async function main() {
     [configuration]
   );
   console.log('comet deployed at ', comet.address)
+
+  console.log('waiting 1 min before verification')
+  await delay(60000);
 
   console.log('Starting verification!')
 

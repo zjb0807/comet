@@ -63,7 +63,7 @@ async function main() {
     trackingIndexScale: "0x038d7ea4c68000",
     baseTrackingSupplySpeed: "0x00",
     baseTrackingBorrowSpeed: "0x00",
-    baseMinForRewards: "0x01",
+    baseMinForRewards: "0x07",
     baseBorrowMin: "0x0f4240",
     targetReserves: "0x00",
     assetConfigs: 
@@ -115,13 +115,13 @@ async function main() {
       }
     ]
   };
-  // await (await cometFactory.clone(configuration)).wait();
+  // await cometFactory.clone(configuration);
 
-  console.log('cloned contract')
+  // console.log('cloned contract')
 
   console.log('Starting verification!')
 
-  // await verifyContract("0x646b62f1a7bd1e87330f9aa531aa3648db0f8603", [configuration]);
+  await verifyContract("0x1014b65bc2881320ce6d2a70aee51de1fb354af6", [configuration]);
 
   console.log('Finished verifying!')
 }
