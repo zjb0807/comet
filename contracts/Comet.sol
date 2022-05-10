@@ -1017,6 +1017,8 @@ contract Comet is CometMainInterface {
         (uint104 repayAmount, uint104 supplyAmount) = repayAndSupplyAmount(dstPrincipal, dstPrincipalNew);
 
         // Note: Instead of `total += addAmount - subAmount` to avoid underflow errors.
+        // DONE: is this reentrancy safe, since check is afterwards?
+        //      Transfer should have no re-entrancy risk since it doesn't call any external contracts, other than oracle
         totalSupplyBase = totalSupplyBase + supplyAmount - withdrawAmount;
         totalBorrowBase = totalBorrowBase + borrowAmount - repayAmount;
 
@@ -1140,6 +1142,9 @@ contract Comet is CometMainInterface {
         updateAssetsIn(src, assetInfo, srcCollateral, srcCollateralNew);
 
         // Note: no accrue interest, BorrowCF < LiquidationCF covers small changes
+        // DONE: possible to avoid this check with re-entrancy?
+        //     Nope, no way to call exitMarkets directly like in recent Rari bug.
+        //     All contract calls also happen after state updates
         if (!isBorrowCollateralized(src)) revert NotCollateralized();
 
         doTransferOut(asset, to, amount);
@@ -1223,6 +1228,7 @@ contract Comet is CometMainInterface {
         emit AbsorbDebt(absorber, account, debtAbsorbed, valueOfDebtAbsorbed);
     }
 
+    // Re-entrancy: safe, can only re-enter to avoid reserves check.
     /**
      * @notice Buy collateral from the protocol using base tokens, increasing protocol reserves
        A minimum collateral amount should be specified to indicate the maximum slippage acceptable for the buyer.
@@ -1239,12 +1245,18 @@ contract Comet is CometMainInterface {
         int reserves = getReserves();
         if (reserves >= 0 && uint(reserves) >= targetReserves) revert NotForSale();
 
-        // XXX check re-entrancy
+        // DONE: re-entrancy
+        //     can re-enter BuyCollateral to bypass reserves check, but that's relatively harmless
+        //     since withdraw collateral happens afterwards, can't hack
         doTransferIn(baseToken, msg.sender, baseAmount);
 
         uint collateralAmount = quoteCollateral(asset, baseAmount);
         if (collateralAmount < minAmount) revert TooMuchSlippage();
 
+        // DONE: re-entrancy
+        // re-enter using pre-transfer and post-transfer hooks here?
+        //     if quoteCollateral used collateral balance to determine price, then
+        //     a pre-transfer hook re-entrancy in withdrawCollateral could be deadly
         withdrawCollateral(address(this), recipient, asset, safe128(collateralAmount));
 
         emit BuyCollateral(msg.sender, asset, baseAmount, collateralAmount);

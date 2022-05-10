@@ -109,6 +109,7 @@ contract Bulker {
         amount = getAmount(weth, amount);
         CometInterface(comet).withdrawFrom(msg.sender, address(this), weth, amount);
         IWETH9(weth).withdraw(amount);
+        // XXX potential re-entrancy (see recent Rari hack)
         (bool success, ) = to.call{ value: amount }("");
         if (!success) revert FailedToSendEther();
     }
