@@ -35,11 +35,11 @@ migration<Vars>('1653357106_mint_to_fauceteer', {
     await COMP.transfer(fauceteerAddress, signerCompBalance.div(2)); // transfer half of signer's balance
     console.log(`COMP.balanceOf(fauceteerAddress): ${await COMP.balanceOf(fauceteerAddress)}`);
 
-    // UNI (18 decimals) (not working)
-    const UNI = contracts.get('UNI');
-    console.log(`minting UNI@${UNI.address} to fauceteer@${fauceteerAddress}`);
-    await UNI.mint(fauceteerAddress, exp(100_000_000, 18)); // mint 100M UNI
-    console.log(`UNI.decimals(): ${await UNI.decimals()}`);
+    // UNI (18 decimals) XXX enable minting for UNI
+    // const UNI = contracts.get('UNI');
+    // console.log(`minting UNI@${UNI.address} to fauceteer@${fauceteerAddress}`);
+    // await UNI.mint(fauceteerAddress, exp(100_000_000, 18)); // mint 100M UNI
+    // console.log(`UNI.decimals(): ${await UNI.decimals()}`);
 
     // LINK (18 decimals)
     const LINK = contracts.get('LINK');
