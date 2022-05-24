@@ -30,7 +30,7 @@ migration<Vars>('1653431603_mint_to_fauceteer', {
     await wait(
       WBTC.mint(
         fauceteer.address,
-        exp(1_000_000, wbtcDecimals), // mint 1M WBTC
+        exp(100_000_000, wbtcDecimals), // mint 100M WBTC
         '0x0000000000000000000000000000000000000000',
         0,
         '0x0000000000000000000000000000000000000000000000000000000000000000'
