@@ -24,6 +24,19 @@ migration<Vars>('1653431603_mint_to_fauceteer', {
     console.log(`USDC.balanceOf(fauceteerAddress): ${await USDC.balanceOf(fauceteerAddress)}`);
 
     // WBTC
+    const WBTC = contracts.get('WBTC.e');
+    const wbtcDecimals = await WBTC.decimals();
+    console.log(`minting WBTC@${WBTC.address} to fauceteer@${fauceteerAddress}`);
+    await wait(
+      WBTC.mint(
+        fauceteer.address,
+        exp(1_000_000, wbtcDecimals), // mint 1M WBTC
+        '0x0000000000000000000000000000000000000000',
+        0,
+        '0x0000000000000000000000000000000000000000000000000000000000000000'
+      )
+    );
+    console.log(`WBTC.balanceOf(fauceteerAddress): ${await WBTC.balanceOf(fauceteerAddress)}`);
 
     return {};
   },
