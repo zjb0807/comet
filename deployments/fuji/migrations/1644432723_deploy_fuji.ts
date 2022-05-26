@@ -77,15 +77,6 @@ migration('1644432723_deploy_fuji', {
         '0x0000000000000000000000000000000000000000000000000000000000000000'
       )
     );
-    await wait(
-      wbtc.mint(
-        fauceteer.address,
-        exp(10000, 8),
-        '0x0000000000000000000000000000000000000000',
-        0,
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
-      )
-    );
 
     let wavax = await deploymentManager.clone(cloneAddr.wavax, [], cloneNetwork);
     // Give admin 0.01 WAVAX tokens [this is a precious resource here!]
