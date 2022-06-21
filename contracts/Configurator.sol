@@ -277,8 +277,9 @@ contract Configurator is ConfiguratorStorage {
     }
 
     /// @notice Deploy a new version of the Comet implementation.
-    /// @dev callable by anyone
+    /// @dev only callable by governor
     function deploy() external returns (address) {
+        if (msg.sender != governor) revert Unauthorized();
         address newComet = CometFactory(factory).clone(configuratorParams);
         emit CometDeployed(newComet);
         return newComet;

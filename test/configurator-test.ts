@@ -44,7 +44,7 @@ describe('configurator', function () {
 
     const configuratorAsProxy = configurator.attach(configuratorProxy.address);
     const txn = await wait(configuratorAsProxy.deploy()) as any;
-    const [ newCometAddress ] = txn.receipt.events.find(event => event.event === 'CometDeployed').args;
+    const [newCometAddress] = txn.receipt.events.find(event => event.event === 'CometDeployed').args;
 
     expect(event(txn, 0)).to.be.deep.equal({
       CometDeployed: {
@@ -66,6 +66,13 @@ describe('configurator', function () {
   });
 
   it('reverts if deploy is called from non-governor', async () => {
+    const { configurator, configuratorProxy, users: [alice] } = await makeConfigurator();
+
+    const configuratorAsProxy = configurator.attach(configuratorProxy.address);
+    await expect(configuratorAsProxy.connect(alice).deploy()).to.be.revertedWith("custom error 'Unauthorized()'");
+  });
+
+  it('reverts if deployAndUpgradeTo is called from non-governor', async () => {
     const { configuratorProxy, proxyAdmin, cometProxy, users: [alice] } = await makeConfigurator();
 
     await expect(proxyAdmin.connect(alice).deployAndUpgradeTo(configuratorProxy.address, cometProxy.address)).to.be.revertedWith('Ownable: caller is not the owner');
