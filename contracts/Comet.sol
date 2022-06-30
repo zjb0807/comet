@@ -4,6 +4,7 @@ pragma solidity 0.8.15;
 import "./CometMainInterface.sol";
 import "./ERC20.sol";
 import "./vendor/@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Compound's Comet Contract
@@ -603,7 +604,11 @@ contract Comet is CometMainInterface {
      * @dev The change in principal broken into repay and supply amounts
      * @dev Note: The assumption `newPrincipal >= oldPrincipal` MUST be true
      */
-    function repayAndSupplyAmount(int104 oldPrincipal, int104 newPrincipal) internal pure returns (uint104, uint104) {
+    function repayAndSupplyAmount(int104 oldPrincipal, int104 newPrincipal) internal view returns (uint104, uint104) {
+        if (newPrincipal < oldPrincipal) {
+            console.log("new principal < old principal");
+            revert("Not Good");
+        }
         if (newPrincipal <= 0) {
             return (uint104(newPrincipal - oldPrincipal), 0);
         } else if (oldPrincipal >= 0) {
@@ -852,12 +857,20 @@ contract Comet is CometMainInterface {
 
         UserBasic memory dstUser = userBasic[dst];
         int104 dstPrincipal = dstUser.principal;
+        console.log("dstPrincipal %s", uint104(dstPrincipal));
         int104 dstBalance = presentValue(dstPrincipal) + signed104(amount);
         int104 dstPrincipalNew = principalValue(dstBalance);
+        console.log("dstPrincipalNew %s", uint104(dstPrincipalNew));
+        console.log("dstPrincipalNew %s", uint104(principalValue(presentValue(dstPrincipal))));
 
         (uint104 repayAmount, uint104 supplyAmount) = repayAndSupplyAmount(dstPrincipal, dstPrincipalNew);
 
+        console.log("totalSupplyBase before is %s", totalSupplyBase);
+        console.log("supplyAmount is %s", supplyAmount);
+        console.log("repayAmount is %s", repayAmount);
         totalSupplyBase += supplyAmount;
+        console.log("totalSupplyBase after is %s", totalSupplyBase);
+
         totalBorrowBase -= repayAmount;
 
         updateBasePrincipal(dst, dstUser, dstPrincipalNew);

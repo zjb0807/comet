@@ -13,6 +13,7 @@ export class Supplier extends Actor {
       const baseBalance = (await market.baseAsset.balanceOf(this.signer.address)).toBigInt();
       const maxSupply = exp(10_000_000, 6);
       const supplyAmount = min(baseBalance, maxSupply);
+      console.log('SUPPLIER supply amount is %s', supplyAmount)
       await this.supply(market, market.baseAsset, supplyAmount);
     }
   }

@@ -18,8 +18,10 @@ export abstract class Actor {
 
   // XXX support negative amount as withdraw
   async supply(market: Market, asset: FaucetToken, amount: BigNumberish) {
+    console.log('supply ', amount, ' of ', await asset.symbol())
     await wait(asset.connect(this.signer).approve(market.comet.address, amount));
     await (wait(market.comet.connect(this.signer).supply(asset.address, amount)));
+    console.log('total supply is now ', await market.comet.totalSupply())
   }
 
   // XXX support negative amount as repay
