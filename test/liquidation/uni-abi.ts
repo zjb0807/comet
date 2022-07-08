@@ -2,8 +2,18 @@ export default [
   {
     'inputs': [
       {
+        'internalType': 'address',
+        'name': 'account',
+        'type': 'address'
+      },
+      {
+        'internalType': 'address',
+        'name': 'minter_',
+        'type': 'address'
+      },
+      {
         'internalType': 'uint256',
-        'name': 'chainId_',
+        'name': 'mintingAllowedAfter_',
         'type': 'uint256'
       }
     ],
@@ -17,60 +27,23 @@ export default [
       {
         'indexed': true,
         'internalType': 'address',
-        'name': 'src',
+        'name': 'owner',
         'type': 'address'
       },
       {
         'indexed': true,
         'internalType': 'address',
-        'name': 'guy',
+        'name': 'spender',
         'type': 'address'
       },
       {
         'indexed': false,
         'internalType': 'uint256',
-        'name': 'wad',
+        'name': 'amount',
         'type': 'uint256'
       }
     ],
     'name': 'Approval',
-    'type': 'event'
-  },
-  {
-    'anonymous': true,
-    'inputs': [
-      {
-        'indexed': true,
-        'internalType': 'bytes4',
-        'name': 'sig',
-        'type': 'bytes4'
-      },
-      {
-        'indexed': true,
-        'internalType': 'address',
-        'name': 'usr',
-        'type': 'address'
-      },
-      {
-        'indexed': true,
-        'internalType': 'bytes32',
-        'name': 'arg1',
-        'type': 'bytes32'
-      },
-      {
-        'indexed': true,
-        'internalType': 'bytes32',
-        'name': 'arg2',
-        'type': 'bytes32'
-      },
-      {
-        'indexed': false,
-        'internalType': 'bytes',
-        'name': 'data',
-        'type': 'bytes'
-      }
-    ],
-    'name': 'LogNote',
     'type': 'event'
   },
   {
@@ -79,19 +52,88 @@ export default [
       {
         'indexed': true,
         'internalType': 'address',
-        'name': 'src',
+        'name': 'delegator',
         'type': 'address'
       },
       {
         'indexed': true,
         'internalType': 'address',
-        'name': 'dst',
+        'name': 'fromDelegate',
+        'type': 'address'
+      },
+      {
+        'indexed': true,
+        'internalType': 'address',
+        'name': 'toDelegate',
+        'type': 'address'
+      }
+    ],
+    'name': 'DelegateChanged',
+    'type': 'event'
+  },
+  {
+    'anonymous': false,
+    'inputs': [
+      {
+        'indexed': true,
+        'internalType': 'address',
+        'name': 'delegate',
         'type': 'address'
       },
       {
         'indexed': false,
         'internalType': 'uint256',
-        'name': 'wad',
+        'name': 'previousBalance',
+        'type': 'uint256'
+      },
+      {
+        'indexed': false,
+        'internalType': 'uint256',
+        'name': 'newBalance',
+        'type': 'uint256'
+      }
+    ],
+    'name': 'DelegateVotesChanged',
+    'type': 'event'
+  },
+  {
+    'anonymous': false,
+    'inputs': [
+      {
+        'indexed': false,
+        'internalType': 'address',
+        'name': 'minter',
+        'type': 'address'
+      },
+      {
+        'indexed': false,
+        'internalType': 'address',
+        'name': 'newMinter',
+        'type': 'address'
+      }
+    ],
+    'name': 'MinterChanged',
+    'type': 'event'
+  },
+  {
+    'anonymous': false,
+    'inputs': [
+      {
+        'indexed': true,
+        'internalType': 'address',
+        'name': 'from',
+        'type': 'address'
+      },
+      {
+        'indexed': true,
+        'internalType': 'address',
+        'name': 'to',
+        'type': 'address'
+      },
+      {
+        'indexed': false,
+        'internalType': 'uint256',
+        'name': 'amount',
         'type': 'uint256'
       }
     ],
@@ -101,7 +143,22 @@ export default [
   {
     'constant': true,
     'inputs': [],
-    'name': 'DOMAIN_SEPARATOR',
+    'name': 'DELEGATION_TYPEHASH',
+    'outputs': [
+      {
+        'internalType': 'bytes32',
+        'name': '',
+        'type': 'bytes32'
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  },
+  {
+    'constant': true,
+    'inputs': [],
+    'name': 'DOMAIN_TYPEHASH',
     'outputs': [
       {
         'internalType': 'bytes32',
@@ -133,12 +190,12 @@ export default [
     'inputs': [
       {
         'internalType': 'address',
-        'name': '',
+        'name': 'account',
         'type': 'address'
       },
       {
         'internalType': 'address',
-        'name': '',
+        'name': 'spender',
         'type': 'address'
       }
     ],
@@ -159,12 +216,12 @@ export default [
     'inputs': [
       {
         'internalType': 'address',
-        'name': 'usr',
+        'name': 'spender',
         'type': 'address'
       },
       {
         'internalType': 'uint256',
-        'name': 'wad',
+        'name': 'rawAmount',
         'type': 'uint256'
       }
     ],
@@ -185,7 +242,7 @@ export default [
     'inputs': [
       {
         'internalType': 'address',
-        'name': '',
+        'name': 'account',
         'type': 'address'
       }
     ],
@@ -202,23 +259,34 @@ export default [
     'type': 'function'
   },
   {
-    'constant': false,
+    'constant': true,
     'inputs': [
       {
         'internalType': 'address',
-        'name': 'usr',
+        'name': '',
         'type': 'address'
       },
       {
-        'internalType': 'uint256',
-        'name': 'wad',
-        'type': 'uint256'
+        'internalType': 'uint32',
+        'name': '',
+        'type': 'uint32'
       }
     ],
-    'name': 'burn',
-    'outputs': [],
+    'name': 'checkpoints',
+    'outputs': [
+      {
+        'internalType': 'uint32',
+        'name': 'fromBlock',
+        'type': 'uint32'
+      },
+      {
+        'internalType': 'uint96',
+        'name': 'votes',
+        'type': 'uint96'
+      }
+    ],
     'payable': false,
-    'stateMutability': 'nonpayable',
+    'stateMutability': 'view',
     'type': 'function'
   },
   {
@@ -241,11 +309,11 @@ export default [
     'inputs': [
       {
         'internalType': 'address',
-        'name': 'guy',
+        'name': 'delegatee',
         'type': 'address'
       }
     ],
-    'name': 'deny',
+    'name': 'delegate',
     'outputs': [],
     'payable': false,
     'stateMutability': 'nonpayable',
@@ -256,12 +324,135 @@ export default [
     'inputs': [
       {
         'internalType': 'address',
-        'name': 'usr',
+        'name': 'delegatee',
         'type': 'address'
       },
       {
         'internalType': 'uint256',
-        'name': 'wad',
+        'name': 'nonce',
+        'type': 'uint256'
+      },
+      {
+        'internalType': 'uint256',
+        'name': 'expiry',
+        'type': 'uint256'
+      },
+      {
+        'internalType': 'uint8',
+        'name': 'v',
+        'type': 'uint8'
+      },
+      {
+        'internalType': 'bytes32',
+        'name': 'r',
+        'type': 'bytes32'
+      },
+      {
+        'internalType': 'bytes32',
+        'name': 's',
+        'type': 'bytes32'
+      }
+    ],
+    'name': 'delegateBySig',
+    'outputs': [],
+    'payable': false,
+    'stateMutability': 'nonpayable',
+    'type': 'function'
+  },
+  {
+    'constant': true,
+    'inputs': [
+      {
+        'internalType': 'address',
+        'name': '',
+        'type': 'address'
+      }
+    ],
+    'name': 'delegates',
+    'outputs': [
+      {
+        'internalType': 'address',
+        'name': '',
+        'type': 'address'
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  },
+  {
+    'constant': true,
+    'inputs': [
+      {
+        'internalType': 'address',
+        'name': 'account',
+        'type': 'address'
+      }
+    ],
+    'name': 'getCurrentVotes',
+    'outputs': [
+      {
+        'internalType': 'uint96',
+        'name': '',
+        'type': 'uint96'
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  },
+  {
+    'constant': true,
+    'inputs': [
+      {
+        'internalType': 'address',
+        'name': 'account',
+        'type': 'address'
+      },
+      {
+        'internalType': 'uint256',
+        'name': 'blockNumber',
+        'type': 'uint256'
+      }
+    ],
+    'name': 'getPriorVotes',
+    'outputs': [
+      {
+        'internalType': 'uint96',
+        'name': '',
+        'type': 'uint96'
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  },
+  {
+    'constant': true,
+    'inputs': [],
+    'name': 'minimumTimeBetweenMints',
+    'outputs': [
+      {
+        'internalType': 'uint32',
+        'name': '',
+        'type': 'uint32'
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  },
+  {
+    'constant': false,
+    'inputs': [
+      {
+        'internalType': 'address',
+        'name': 'dst',
+        'type': 'address'
+      },
+      {
+        'internalType': 'uint256',
+        'name': 'rawAmount',
         'type': 'uint256'
       }
     ],
@@ -272,28 +463,48 @@ export default [
     'type': 'function'
   },
   {
-    'constant': false,
-    'inputs': [
+    'constant': true,
+    'inputs': [],
+    'name': 'mintCap',
+    'outputs': [
+      {
+        'internalType': 'uint8',
+        'name': '',
+        'type': 'uint8'
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  },
+  {
+    'constant': true,
+    'inputs': [],
+    'name': 'minter',
+    'outputs': [
       {
         'internalType': 'address',
-        'name': 'src',
+        'name': '',
         'type': 'address'
-      },
-      {
-        'internalType': 'address',
-        'name': 'dst',
-        'type': 'address'
-      },
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  },
+  {
+    'constant': true,
+    'inputs': [],
+    'name': 'mintingAllowedAfter',
+    'outputs': [
       {
         'internalType': 'uint256',
-        'name': 'wad',
+        'name': '',
         'type': 'uint256'
       }
     ],
-    'name': 'move',
-    'outputs': [],
     'payable': false,
-    'stateMutability': 'nonpayable',
+    'stateMutability': 'view',
     'type': 'function'
   },
   {
@@ -333,11 +544,32 @@ export default [
     'type': 'function'
   },
   {
+    'constant': true,
+    'inputs': [
+      {
+        'internalType': 'address',
+        'name': '',
+        'type': 'address'
+      }
+    ],
+    'name': 'numCheckpoints',
+    'outputs': [
+      {
+        'internalType': 'uint32',
+        'name': '',
+        'type': 'uint32'
+      }
+    ],
+    'payable': false,
+    'stateMutability': 'view',
+    'type': 'function'
+  },
+  {
     'constant': false,
     'inputs': [
       {
         'internalType': 'address',
-        'name': 'holder',
+        'name': 'owner',
         'type': 'address'
       },
       {
@@ -347,18 +579,13 @@ export default [
       },
       {
         'internalType': 'uint256',
-        'name': 'nonce',
+        'name': 'rawAmount',
         'type': 'uint256'
       },
       {
         'internalType': 'uint256',
-        'name': 'expiry',
+        'name': 'deadline',
         'type': 'uint256'
-      },
-      {
-        'internalType': 'bool',
-        'name': 'allowed',
-        'type': 'bool'
       },
       {
         'internalType': 'uint8',
@@ -387,51 +614,11 @@ export default [
     'inputs': [
       {
         'internalType': 'address',
-        'name': 'usr',
-        'type': 'address'
-      },
-      {
-        'internalType': 'uint256',
-        'name': 'wad',
-        'type': 'uint256'
-      }
-    ],
-    'name': 'pull',
-    'outputs': [],
-    'payable': false,
-    'stateMutability': 'nonpayable',
-    'type': 'function'
-  },
-  {
-    'constant': false,
-    'inputs': [
-      {
-        'internalType': 'address',
-        'name': 'usr',
-        'type': 'address'
-      },
-      {
-        'internalType': 'uint256',
-        'name': 'wad',
-        'type': 'uint256'
-      }
-    ],
-    'name': 'push',
-    'outputs': [],
-    'payable': false,
-    'stateMutability': 'nonpayable',
-    'type': 'function'
-  },
-  {
-    'constant': false,
-    'inputs': [
-      {
-        'internalType': 'address',
-        'name': 'guy',
+        'name': 'minter_',
         'type': 'address'
       }
     ],
-    'name': 'rely',
+    'name': 'setMinter',
     'outputs': [],
     'payable': false,
     'stateMutability': 'nonpayable',
@@ -477,7 +664,7 @@ export default [
       },
       {
         'internalType': 'uint256',
-        'name': 'wad',
+        'name': 'rawAmount',
         'type': 'uint256'
       }
     ],
@@ -508,7 +695,7 @@ export default [
       },
       {
         'internalType': 'uint256',
-        'name': 'wad',
+        'name': 'rawAmount',
         'type': 'uint256'
       }
     ],
@@ -522,42 +709,6 @@ export default [
     ],
     'payable': false,
     'stateMutability': 'nonpayable',
-    'type': 'function'
-  },
-  {
-    'constant': true,
-    'inputs': [],
-    'name': 'version',
-    'outputs': [
-      {
-        'internalType': 'string',
-        'name': '',
-        'type': 'string'
-      }
-    ],
-    'payable': false,
-    'stateMutability': 'view',
-    'type': 'function'
-  },
-  {
-    'constant': true,
-    'inputs': [
-      {
-        'internalType': 'address',
-        'name': '',
-        'type': 'address'
-      }
-    ],
-    'name': 'wards',
-    'outputs': [
-      {
-        'internalType': 'uint256',
-        'name': '',
-        'type': 'uint256'
-      }
-    ],
-    'payable': false,
-    'stateMutability': 'view',
     'type': 'function'
   }
 ];

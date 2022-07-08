@@ -11,8 +11,8 @@ import "./vendor/@uniswap/v3-periphery/contracts/libraries/CallbackValidation.so
 import "./vendor/@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "./vendor/@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
-import "./CometInterface.sol";
-import "./ERC20.sol";
+import "../CometInterface.sol";
+import "../ERC20.sol";
 
 import "hardhat/console.sol";
 
@@ -35,6 +35,8 @@ contract Liquidator is IUniswapV3FlashCallback, PeripheryImmutableState, Periphe
 
     using LowGasSafeMath for uint256;
     using LowGasSafeMath for int256;
+
+    uint256 public constant QUOTE_PRICE_SCALE = 1e6;
 
     ISwapRouter public immutable swapRouter;
     CometInterface public immutable comet;
@@ -73,6 +75,7 @@ contract Liquidator is IUniswapV3FlashCallback, PeripheryImmutableState, Periphe
         uint256 fee1,
         bytes calldata data
     ) external override {
+        // console.log("Inside flashack ");
         FlashCallbackData memory decoded = abi.decode(data, (FlashCallbackData));
         CallbackValidation.verifyCallback(factory, decoded.poolKey);
 
@@ -94,6 +97,10 @@ contract Liquidator is IUniswapV3FlashCallback, PeripheryImmutableState, Periphe
             // XXX if buyCollateral returns collateral amount after change in Comet, no need to check balance
             comet.buyCollateral(asset, 0, baseAmount, address(this));
             uint256 collateralAmount = ERC20(asset).balanceOf(address(this));
+
+            // console.log("collateral amount %s = ", collateralAmount);
+            // uint256 leftBalance = comet.collateralBalanceOf(address(comet), asset);
+            // console.log("balance left = ", leftBalance);
 
             TransferHelper.safeApprove(asset, address(swapRouter), collateralAmount);
 
@@ -145,9 +152,20 @@ contract Liquidator is IUniswapV3FlashCallback, PeripheryImmutableState, Periphe
         address[] memory cometAssets = new address[](numAssets);
         for (uint8 i = 0; i < numAssets; i++) {
             address asset = comet.getAssetInfo(i).asset;
+            // uint64 assetScale = comet.getAssetInfo(i).scale;
+
             cometAssets[i] = asset;
             uint256 collateralBalance = comet.collateralBalanceOf(address(comet), asset);
-            uint256 quotePrice = comet.quoteCollateral(asset, 1 * comet.baseScale());
+
+            if (collateralBalance == 0) continue;
+
+            uint256 quotePrice = comet.quoteCollateral(asset, QUOTE_PRICE_SCALE * comet.baseScale());
+
+            // console.log("asset = ", asset);
+            // console.log("Quote price = ", quotePrice);
+            // console.log("Collateral balance = ", collateralBalance);
+            uint256 assetBaseAmount = comet.baseScale() * QUOTE_PRICE_SCALE * collateralBalance / quotePrice;
+            // console.log("assetBaseAmount = ", assetBaseAmount);
 
             /*
                 quoteCollateral = amount of DAI you get for 1 USDC
@@ -157,9 +175,6 @@ contract Liquidator is IUniswapV3FlashCallback, PeripheryImmutableState, Periphe
                 1 / quotePrice = x / collateralBalance
                 (1 / quotePrice) * collateralBalance = x
             */
-            // uint256 assetBaseAmount = comet.collateralBalanceOf(address(comet), asset) * quotePrice / 1e30; // PRICE_SCALE + 1e12
-            // console.log("assetBaseAmount: %s", assetBaseAmount);
-            uint256 assetBaseAmount = ((1e6 * 1e18 / quotePrice) * collateralBalance) / 1e18;
             assetBaseAmounts[i] = assetBaseAmount;
             totalBaseAmount += assetBaseAmount;
         }
